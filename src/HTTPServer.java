@@ -10,24 +10,18 @@ public class HTTPServer extends AbstractServer {
     @Override
     public void run() {
         super.run();
-
         loadRedirects();
         bind();
         // loop so server will begin listening again on the port once terminating a connection
         while(true) {
             try{
                 if (acceptFromClient()) {
-                    ArrayList<String> x = getRequestHeader();
+                    ArrayList<String> requestHeader = getRequestHeader();
                     // split the first line of the request
-                    if(x.isEmpty()){
-                        System.out.println("Get request header is empty.");
-
-                        // TODO: Handle this 501 - Not Implemented
-                        String header = buildHeader(501, "Not Implemented", null);
-                        // server.sendResponse(header, null);
-                    }
-                    else {
-                        String[] requests = x.get(0).split(" ");
+                    if(requestHeader == null || requestHeader.isEmpty()){
+                        System.out.println("Ignoring empty request...");
+                    } else {
+                        String[] requests = requestHeader.get(0).split(" ");
                         // process the request
                         processRequest(requests[0], requests[1]);
                     }
@@ -42,6 +36,7 @@ public class HTTPServer extends AbstractServer {
             serverCleanup();
         }
     }
+
 
     public HTTPServer(int serverPort){
         super(serverPort);
