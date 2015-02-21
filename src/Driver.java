@@ -20,9 +20,7 @@ public class Driver {
         }
 
         HTTPServer server1 = new HTTPServer(serverPort);
-        HTTPServer server = new HTTPServer(serverPort+1);
         server1.start();
-        server.start();
 
     }
 }

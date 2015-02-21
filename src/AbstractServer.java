@@ -17,8 +17,7 @@ abstract class AbstractServer extends Thread {
     private BufferedReader fromClientStream;
     private HashMap<String,String> mRedirects;
     private final int serverPort;
-    private ServerSocket socket;
-    private Socket mClientSocket;
+
     private DataOutputStream toClientStream;
 
     public Boolean getLeaveConnectionOpen() {
@@ -36,23 +35,6 @@ abstract class AbstractServer extends Thread {
     public void setToClientStream(DataOutputStream clientStream){
         toClientStream = clientStream;
     }
-
-    public ServerSocket getSocket() {
-        return socket;
-    }
-
-    public void setSocket(ServerSocket socket) {
-        this.socket = socket;
-    }
-
-    public Socket getClientSocket() {
-        return mClientSocket;
-    }
-
-    public void setClientSocket(Socket clientSocket) {
-        mClientSocket = clientSocket;
-    }
-
 
     public AbstractServer(int serverPort) {
         this.serverPort = serverPort;
@@ -238,7 +220,6 @@ abstract class AbstractServer extends Thread {
         try {
             fromClientStream.close();
             toClientStream.close();
-            mClientSocket.close();
         } catch (IOException e){
             System.out.println(e);
         }

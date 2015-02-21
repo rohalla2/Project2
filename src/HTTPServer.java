@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -12,6 +13,24 @@ import java.util.Map;
  */
 public class HTTPServer extends AbstractServer {
     private final int SOCKET_LIVE_TIME = 5;
+    private ServerSocket socket;
+    private Socket mClientSocket;
+    public ServerSocket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(ServerSocket socket) {
+        this.socket = socket;
+    }
+
+    public Socket getClientSocket() {
+        return mClientSocket;
+    }
+
+    public void setClientSocket(Socket clientSocket) {
+        mClientSocket = clientSocket;
+    }
+
     @Override
     public void run() {
         super.run();
@@ -28,7 +47,7 @@ public class HTTPServer extends AbstractServer {
                         boolean isEmpty = false;
                         do {
                             if (!getFromClientStream().ready()){
-                                System.out.println("Client Stream not ready");
+//                                System.out.println("Client Stream not ready");
                                 break;
                             }
 //                            System.out.println("before get request header");
@@ -49,9 +68,11 @@ public class HTTPServer extends AbstractServer {
                             }
                         } while (!isEmpty);
 
-                        Thread.sleep(1000);
+                        if (waitInterval != 0){
+                            Thread.sleep(1000);
+                            System.out.println("Waited " + waitInterval);
+                        }
                         waitInterval++;
-                        System.out.println("Waited " + waitInterval);
                         if(waitInterval == SOCKET_LIVE_TIME){
                             setLeaveConnectionOpen(false);
                         }
@@ -102,5 +123,15 @@ public class HTTPServer extends AbstractServer {
         setToClientStream(new DataOutputStream(getClientSocket().getOutputStream()));
         setFromClientStream(new BufferedReader(new InputStreamReader(getClientSocket().getInputStream())));
         return true;
+    }
+
+    @Override
+    public void serverCleanup() {
+        super.serverCleanup();
+        try {
+            mClientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
