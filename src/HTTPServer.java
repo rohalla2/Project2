@@ -23,38 +23,37 @@ public class HTTPServer extends AbstractServer {
                 setLeaveConnectionOpen(true);
                 if (acceptFromClient()) {
                     System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
+                    int waitInterval = 0;
                     while (getLeaveConnectionOpen()) {
-                        int waitInterval = 0;
-                        while(!getFromClientStream().ready()){
-                            Thread.sleep(1000);
-                            waitInterval++;
-                            System.out.println("in wait loop " + waitInterval);
-                            if(waitInterval == SOCKET_LIVE_TIME){
-                                setLeaveConnectionOpen(false);
+                        boolean isEmpty = false;
+                        do {
+                            if (!getFromClientStream().ready()){
+                                System.out.println("Client Stream not ready");
                                 break;
                             }
-                        }
-                        System.out.println("Outside of wait loop");
-                        if (waitInterval == SOCKET_LIVE_TIME) {
-                            break;
-                        }
-                        ArrayList<String> requestHeader = getRequestHeader();
-                        System.out.println("Before Check header for close connection");
-                        if(requestHeader != null && !requestHeader.isEmpty() && ( requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0"))) {
-                            System.out.println("In check for close");
-                            setLeaveConnectionOpen(false);
-                        }
-                        System.out.println("After check");
+//                            System.out.println("before get request header");
+                            ArrayList<String> requestHeader = getRequestHeader();
 
-                        System.out.println("Before process header");
-                        // split the first line of the request
-                        if (requestHeader == null || requestHeader.isEmpty()) {
-                            System.out.println("Ignoring empty request...");
-                        } else {
-                            System.out.println("About to process request");
-                            String[] requests = requestHeader.get(0).split(" ");
-                            // process the request
-                            processRequest(requests[0], requests[1]);
+                            if(requestHeader != null && !requestHeader.isEmpty() && ( requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0"))) {
+//                                System.out.println("In check for close");
+                                setLeaveConnectionOpen(false);
+                            }
+
+                            if (requestHeader == null || requestHeader.isEmpty()) {
+                                System.out.println("Ignoring empty request...");
+                                isEmpty = true;
+                            } else {
+                                String[] requests = requestHeader.get(0).split(" ");
+                                processRequest(requests[0], requests[1]);
+                                waitInterval = 0;
+                            }
+                        } while (!isEmpty);
+
+                        Thread.sleep(1000);
+                        waitInterval++;
+                        System.out.println("Waited " + waitInterval);
+                        if(waitInterval == SOCKET_LIVE_TIME){
+                            setLeaveConnectionOpen(false);
                         }
                     }
                     System.out.println(" ----- ENDED -----");
