@@ -5,53 +5,60 @@ import java.util.*;
 
 abstract class AbstractServer extends Thread {
     private static final String[] URLS_404 = {"/redirect.defs"};
+    private Boolean leaveConnectionOpen;
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public BufferedReader getFromClientStream() {
+        return fromClientStream;
+    }
+
+    private BufferedReader fromClientStream;
+    private HashMap<String,String> mRedirects;
     private final int serverPort;
     private ServerSocket socket;
     private Socket mClientSocket;
     private DataOutputStream toClientStream;
-    private BufferedReader fromClientStream;
-    private HashMap<String,String> mRedirects;
+
+    public Boolean getLeaveConnectionOpen() {
+        return leaveConnectionOpen;
+    }
+
+    public void setLeaveConnectionOpen(Boolean leaveConnectionOpen) {
+        this.leaveConnectionOpen = leaveConnectionOpen;
+    }
+
+    public void setFromClientStream(BufferedReader br){
+        fromClientStream = br;
+    }
+
+    public void setToClientStream(DataOutputStream clientStream){
+        toClientStream = clientStream;
+    }
+
+    public ServerSocket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(ServerSocket socket) {
+        this.socket = socket;
+    }
+
+    public Socket getClientSocket() {
+        return mClientSocket;
+    }
+
+    public void setClientSocket(Socket clientSocket) {
+        mClientSocket = clientSocket;
+    }
+
 
     public AbstractServer(int serverPort) {
         this.serverPort = serverPort;
     }
-
-    /**
-     * Creates a socket + binds to the desired server-side port #.
-     *
-     * @throws {@link IOException} if the port is already in use.
-     */
-    public void bind()  {
-        try{
-            socket = new ServerSocket(serverPort);
-            System.out.println("Server bound and listening to port " + serverPort);
-        } catch (IOException e) {
-            System.out.println("Error binding to port " + serverPort);
-        }
-    }
-
-    /**
-     * Waits for a client to connect, and then sets up stream objects for communication
-     * in both directions.
-     *
-     * @return {@code true} if the connection is successfully established.
-     * @throws {@link IOException} if the server fails to accept the connection.
-     */
-    public boolean acceptFromClient() throws IOException {
-        try {
-            mClientSocket = socket.accept();
-        } catch (SecurityException e) {
-            System.out.println("The security manager intervened; your config is very wrong. " + e);
-            return false;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Probably an invalid port number. " + e);
-            return false;
-        }
-
-        toClientStream = new DataOutputStream(mClientSocket.getOutputStream());
-        fromClientStream = new BufferedReader(new InputStreamReader(mClientSocket.getInputStream()));
-        return true;
-    }
+    abstract void bind();
+    abstract boolean acceptFromClient() throws IOException;
 
     public ArrayList<String> getRequestHeader () throws IOException {
         ArrayList<String> strHeader = new ArrayList<String>();
@@ -134,6 +141,7 @@ abstract class AbstractServer extends Thread {
     public String buildHeader(int status, String phrase, HashMap content){
         String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
         strHeader += "Date: " + getServerDate() + "\r\n";
+        strHeader += "Connection: Keep-Alive\r\n";
 
         // iterate hashmap
         if (content != null) {
