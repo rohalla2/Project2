@@ -28,9 +28,9 @@ public class Driver {
         }
 
         HTTPServer httpServer = new HTTPServer(serverPort);
-        //SecureHTTPServer sslServer = new SecureHTTPServer(sslServerPort);
+        SecureHTTPServer sslServer = new SecureHTTPServer(sslServerPort);
         httpServer.start();
-        //sslServer.start();
+        sslServer.start();
 
     }
 }
