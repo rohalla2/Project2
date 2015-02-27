@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * Created by rohallaj on 2/20/15.
  */
 public class SecureHTTPServer extends AbstractServer {
-    private final int MAX_RETRY = 5;
+    private final int MAX_RETRY = 10;
     private ServerSocket socket;
     private Socket mClientSocket;
     private SSLServerSocketFactory mSSLServerSocketFactory;
@@ -29,8 +29,8 @@ public class SecureHTTPServer extends AbstractServer {
         while(true) {
             try {
                 if (acceptFromClient()) {
-                    System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
-                        for (int i = 0; i <= MAX_RETRY; i++) {
+                    System.out.println("----- NEW HTTPS CLIENT CONNECTION ESTABLISHED -----");
+                         for (int i = 0; i <= MAX_RETRY; i++) {
                             ArrayList<String> requestHeader = getRequestHeader();
                             if (requestHeader == null || requestHeader.isEmpty()) {
                                 System.out.println("Ignoring empty request...");
@@ -39,7 +39,7 @@ public class SecureHTTPServer extends AbstractServer {
                                 processRequest(requests[0], requests[1]);
                             }
                         }
-                    System.out.println(" ----- ENDED -----");
+                    System.out.println(" ----- ENDED HTTPS -----");
                 } else {
                     System.out.println("Error accepting client connection.");
                 }
