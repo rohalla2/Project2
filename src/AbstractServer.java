@@ -123,8 +123,11 @@ abstract class AbstractServer extends Thread {
     public String buildHeader(int status, String phrase, HashMap content){
         String strHeader = "HTTP/1.1 " + status + " " + phrase + "\r\n";
         strHeader += "Date: " + getServerDate() + "\r\n";
-        strHeader += "Connection: keep-alive\r\n";
-
+        if (getLeaveConnectionOpen()) {
+            strHeader += "Connection: keep-alive\r\n";
+        } else {
+            strHeader += "Connection: close\r\n";
+        }
         // iterate hashmap
         if (content != null) {
             Set set = content.entrySet();
