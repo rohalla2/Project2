@@ -12,7 +12,6 @@ import java.util.Map;
  * Created by rohallaj on 2/20/15.
  */
 public class HTTPServer extends AbstractServer {
-    private final int SOCKET_LIVE_TIME = 5;
     private final int MAX_RETRY = 10;
     private ServerSocket socket;
     private Socket mClientSocket;
@@ -44,7 +43,6 @@ public class HTTPServer extends AbstractServer {
                 if (acceptFromClient()) {
                     System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
                     for (int i = 0; i <= MAX_RETRY; i++) {
-                        int waitInterval = 0;
                         while (getLeaveConnectionOpen()) {
                             boolean isEmpty = false;
                             do {
@@ -66,18 +64,8 @@ public class HTTPServer extends AbstractServer {
                                 } else {
                                     String[] requests = requestHeader.get(0).split(" ");
                                     processRequest(requests[0], requests[1]);
-                                    waitInterval = 0;
                                 }
                             } while (!isEmpty);
-
-                            if (waitInterval != 0) {
-                                Thread.sleep(1000);
-                                System.out.println("Waited " + waitInterval);
-                            }
-                            waitInterval++;
-                            if (waitInterval == SOCKET_LIVE_TIME) {
-                                setLeaveConnectionOpen(false);
-                            }
                         }
                     }
                     System.out.println(" ----- ENDED HTTP -----");
@@ -86,9 +74,6 @@ public class HTTPServer extends AbstractServer {
                 }
             }catch(IOException e){
                 System.out.println("Error communicating with client. aborting. Details: " + e);
-            } catch (InterruptedException e){
-                System.out.println(e);
-                System.out.println(e);
             }
             // close sockets and buffered readers
             System.out.println("Cleaning UP");
