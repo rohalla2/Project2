@@ -13,6 +13,7 @@ import java.util.Map;
  */
 public class HTTPServer extends AbstractServer {
     private final int SOCKET_LIVE_TIME = 5;
+    private final int MAX_RETRY = 10;
     private ServerSocket socket;
     private Socket mClientSocket;
     public ServerSocket getSocket() {
@@ -42,42 +43,44 @@ public class HTTPServer extends AbstractServer {
                 setLeaveConnectionOpen(true);
                 if (acceptFromClient()) {
                     System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
-                    int waitInterval = 0;
-                    while (getLeaveConnectionOpen()) {
-                        boolean isEmpty = false;
-                        do {
-                            if (!getFromClientStream().ready()){
+                    for (int i = 0; i <= MAX_RETRY; i++) {
+                        int waitInterval = 0;
+                        while (getLeaveConnectionOpen()) {
+                            boolean isEmpty = false;
+                            do {
+                                if (!getFromClientStream().ready()) {
 //                                System.out.println("Client Stream not ready");
-                                break;
-                            }
+                                    break;
+                                }
 //                            System.out.println("before get request header");
-                            ArrayList<String> requestHeader = getRequestHeader();
+                                ArrayList<String> requestHeader = getRequestHeader();
 
-                            if(requestHeader != null && !requestHeader.isEmpty() && ( requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0"))) {
+                                if (requestHeader != null && !requestHeader.isEmpty() && (requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0"))) {
 //                                System.out.println("In check for close");
+                                    setLeaveConnectionOpen(false);
+                                }
+
+                                if (requestHeader == null || requestHeader.isEmpty()) {
+                                    System.out.println("Ignoring empty request...");
+                                    isEmpty = true;
+                                } else {
+                                    String[] requests = requestHeader.get(0).split(" ");
+                                    processRequest(requests[0], requests[1]);
+                                    waitInterval = 0;
+                                }
+                            } while (!isEmpty);
+
+                            if (waitInterval != 0) {
+                                Thread.sleep(1000);
+                                System.out.println("Waited " + waitInterval);
+                            }
+                            waitInterval++;
+                            if (waitInterval == SOCKET_LIVE_TIME) {
                                 setLeaveConnectionOpen(false);
                             }
-
-                            if (requestHeader == null || requestHeader.isEmpty()) {
-                                System.out.println("Ignoring empty request...");
-                                isEmpty = true;
-                            } else {
-                                String[] requests = requestHeader.get(0).split(" ");
-                                processRequest(requests[0], requests[1]);
-                                waitInterval = 0;
-                            }
-                        } while (!isEmpty);
-
-                        if (waitInterval != 0){
-                            Thread.sleep(1000);
-                            System.out.println("Waited " + waitInterval);
-                        }
-                        waitInterval++;
-                        if(waitInterval == SOCKET_LIVE_TIME){
-                            setLeaveConnectionOpen(false);
                         }
                     }
-                    System.out.println(" ----- ENDED -----");
+                    System.out.println(" ----- ENDED HTTP -----");
                 } else {
                     System.out.println("Error accepting client connection.");
                 }
@@ -112,6 +115,7 @@ public class HTTPServer extends AbstractServer {
     public boolean acceptFromClient() throws IOException {
         try {
             setClientSocket(getSocket().accept());
+            mClientSocket.setSoTimeout(10000);
         } catch (SecurityException e) {
             System.out.println("The security manager intervened; your config is very wrong. " + e);
             return false;
