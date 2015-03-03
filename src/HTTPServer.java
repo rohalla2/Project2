@@ -43,29 +43,20 @@ public class HTTPServer extends AbstractServer {
                 if (acceptFromClient()) {
                     System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
                     for (int i = 0; i <= MAX_RETRY; i++) {
-                        while (getLeaveConnectionOpen()) {
-                            boolean isEmpty = false;
-                            do {
-                                if (!getFromClientStream().ready()) {
-//                                System.out.println("Client Stream not ready");
-                                    break;
-                                }
-//                            System.out.println("before get request header");
-                                ArrayList<String> requestHeader = getRequestHeader();
-
-                                if (requestHeader != null && !requestHeader.isEmpty() && (requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0"))) {
-//                                System.out.println("In check for close");
-                                    setLeaveConnectionOpen(false);
-                                }
-
-                                if (requestHeader == null || requestHeader.isEmpty()) {
-                                    System.out.println("Ignoring empty request...");
-                                    isEmpty = true;
-                                } else {
-                                    String[] requests = requestHeader.get(0).split(" ");
-                                    processRequest(requests[0], requests[1]);
-                                }
-                            } while (!isEmpty);
+                        ArrayList<String> requestHeader = getRequestHeader();
+                        if (requestHeader == null || requestHeader.isEmpty()) {
+                            System.out.println("Ignoring empty request...");
+                            setLeaveConnectionOpen(false);
+                        } else {
+                            String[] requests = requestHeader.get(0).split(" ");
+                            if ( requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0")) {
+                                setLeaveConnectionOpen(false);
+                            }
+                            processRequest(requests[0], requests[1]);
+                            System.out.println("process request");
+                            if (!getLeaveConnectionOpen()) {
+                                break;
+                            }
                         }
                     }
                     System.out.println(" ----- ENDED HTTP -----");
@@ -99,7 +90,7 @@ public class HTTPServer extends AbstractServer {
     @Override
     public boolean acceptFromClient() throws IOException {
         try {
-            setClientSocket(getSocket().accept());
+            mClientSocket =  (socket.accept());
             mClientSocket.setSoTimeout(10000);
         } catch (SecurityException e) {
             System.out.println("The security manager intervened; your config is very wrong. " + e);
@@ -109,8 +100,8 @@ public class HTTPServer extends AbstractServer {
             return false;
         }
 
-        setToClientStream(new DataOutputStream(getClientSocket().getOutputStream()));
-        setFromClientStream(new BufferedReader(new InputStreamReader(getClientSocket().getInputStream())));
+        setToClientStream(new DataOutputStream(mClientSocket.getOutputStream()));
+        setFromClientStream(new BufferedReader(new InputStreamReader(mClientSocket.getInputStream())));
         return true;
     }
 
