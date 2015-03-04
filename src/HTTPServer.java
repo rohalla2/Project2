@@ -66,7 +66,7 @@ public class HTTPServer extends AbstractServer {
                     System.out.println("Error accepting client connection.");
                 }
             }catch(SocketException e){
-                System.out.println("Error broken pipe. Details: "+e);
+                System.out.println("Client has not connected in 10 seconds. Closing Socket.");
             }catch(IOException e){
                 System.out.println("Error communicating with client. aborting. Details: " + e);
             }
