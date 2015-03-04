@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
+import java.net.SocketException;
+
 
 /**
  * Created by rohallaj on 2/20/15.
@@ -49,7 +51,7 @@ public class HTTPServer extends AbstractServer {
                             setLeaveConnectionOpen(false);
                         } else {
                             String[] requests = requestHeader.get(0).split(" ");
-                            if ( requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0")) {
+                            if (requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0")) {
                                 setLeaveConnectionOpen(false);
                             }
                             processRequest(requests[0], requests[1]);
@@ -63,9 +65,12 @@ public class HTTPServer extends AbstractServer {
                 } else {
                     System.out.println("Error accepting client connection.");
                 }
+            }catch(SocketException e){
+                System.out.println("Error broken pipe. Details: "+e);
             }catch(IOException e){
                 System.out.println("Error communicating with client. aborting. Details: " + e);
             }
+
             // close sockets and buffered readers
             System.out.println("Cleaning UP");
             serverCleanup();
