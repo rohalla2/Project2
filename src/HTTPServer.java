@@ -41,8 +41,8 @@ public class HTTPServer extends AbstractServer {
         // loop so server will begin listening again on the port once terminating a connection
         while(true) {
             try {
-                setLeaveConnectionOpen(true);
                 if (acceptFromClient()) {
+                    setLeaveConnectionOpen(true);
                     System.out.println("----- NEW CLIENT CONNECTION ESTABLISHED -----");
                     for (int i = 0; i <= MAX_RETRY; i++) {
                         ArrayList<String> requestHeader = getRequestHeader();
