@@ -13,12 +13,41 @@ import java.net.SocketException;
 /**
  * Created by rohallaj on 2/20/15.
  */
-public class HTTPServer extends AbstractServer {
+public class Server extends AbstractServer {
     private final int MAX_RETRY = 10;
     private ServerSocket socket;
     private Socket mClientSocket;
     public ServerSocket getSocket() {
         return socket;
+    }
+
+    public static void main(String[] argv) {
+        Map<String, String> flags = Utils.parseCmdlineFlags(argv);
+        if (!flags.containsKey("--serverPort")) {
+            System.out.println("usage: Driver --serverPort=12345 --sslServerPort=23456");
+            System.exit(-1);
+        }
+
+        if (!flags.containsKey("--sslServerPort")) {
+            System.out.println("useage: Driver --serverPort=12345 --sslServerPort=23456");
+            System.exit(-1);
+        }
+
+        int serverPort = -1;
+        int sslServerPort = -1;
+
+        try {
+            serverPort = Integer.parseInt(flags.get("--serverPort"));
+            sslServerPort = Integer.parseInt(flags.get("--sslServerPort"));
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid port number! Must be an integer.");
+            System.exit(-1);
+        }
+
+        Server httpServer = new Server(serverPort);
+        HTTPSServer sslServer = new HTTPSServer(sslServerPort);
+        httpServer.start();
+        sslServer.start();
     }
 
     public void setSocket(ServerSocket socket) {
@@ -77,7 +106,7 @@ public class HTTPServer extends AbstractServer {
     }
 
 
-    public HTTPServer(int serverPort){
+    public Server(int serverPort){
         super(serverPort);
     }
 

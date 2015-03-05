@@ -9,13 +9,13 @@ import java.util.ArrayList;
 /**
  * Created by rohallaj on 2/20/15.
  */
-public class SecureHTTPServer extends AbstractServer {
+public class HTTPSServer extends AbstractServer {
     private final int MAX_RETRY = 10;
     private ServerSocket socket;
     private Socket mClientSocket;
     private SSLServerSocketFactory mSSLServerSocketFactory;
 
-    public SecureHTTPServer(int serverPort){
+    public HTTPSServer(int serverPort){
         super(serverPort);
         initializeSSL();
     }

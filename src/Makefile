@@ -3,10 +3,10 @@ JFLAGS = -g -d . -classpath .
 
 default: all
 
-all: Driver
+all: Server
 
-Driver: Driver.java HTTPServer.java Utils.java SecureHTTPServer.java
-	$(JAVAC) $(JFLAGS) Driver.java HTTPServer.java Utils.java SecureHTTPServer.java
+Server: Server.java Utils.java HTTPSServer.java
+	$(JAVAC) $(JFLAGS) Server.java Utils.java HTTPSServer.java
 
 clean:
 	rm -f *.class
