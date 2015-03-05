@@ -40,12 +40,12 @@ public class Server extends Thread {
     public static void main(String[] argv) {
         Map<String, String> flags = Utils.parseCmdlineFlags(argv);
         if (!flags.containsKey("--serverPort")) {
-            System.out.println("usage: Driver --serverPort=12345 --sslServerPort=23456");
+            System.out.println("usage: Server --serverPort=12345 --sslServerPort=23456");
             System.exit(-1);
         }
 
         if (!flags.containsKey("--sslServerPort")) {
-            System.out.println("useage: Driver --serverPort=12345 --sslServerPort=23456");
+            System.out.println("useage: Server --serverPort=12345 --sslServerPort=23456");
             System.exit(-1);
         }
 

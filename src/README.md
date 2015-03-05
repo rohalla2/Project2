@@ -1,13 +1,10 @@
 Project 2
 ----------
-HTTP Server: Server.java
-HTTPS Server: HTTPSServer.java
+The HTTP and SSL server are both contained in the same file, Server.java.  Since the only real difference is how the connection is set up
+we simply use conditionals to decide which type of server should be run (based on the boolean mIsSecureServer). 
 
-We have attempted the extra credit for this project.  To accomplish this, we have created an abstract
-class (AbstractServer.java).  The abstract server contains the shared code for both the HTTP and HTTPS
-server and extends Thread.  Both of the concrete server classes inherit from AbstractServer.java.
-
-The main method is in Server.java so that the project can be run according to spec.
+We have attempted the extra credit for this project.  To accomplish this, we have the Server class extend Thread.  The main work of the 
+server happens in the overrided run() method.  
 
 The included Makefile should be used to build the project:  make clean && make
 
