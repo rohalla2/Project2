@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import httplib
 import socket
 import string
 import sys
@@ -112,48 +113,22 @@ class PersistentTestRunner:
 		self._host = host
 		self._port = port
 
-	def test_200(self):
-		try:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		except socket.error, msg:
-			print 'error creating a TCP socket!', msg[1]
-
-		try:
-			sock.connect((self._host, int(self._port)))
-			sock.settimeout(1.0)
-		except socket.error, msg:
-			print 'error connecting to %s:%s' % (self._host, self._port)
-
-		results = {}
-		filename = '/index.html'
-		url = 'http://%s:%s%s' % (self._host, self._port, filename)
+	def test(self):
 		response = ''
-		try:
-			sock.send("GET %s HTTP/1.1\r\nConnection: Keep-Alive\r\nHost: %s:%s\r\n\r\n" % (filename, self._host, self._port))
-			sock.send("GET %s HTTP/1.1\r\nConnection: Close\r\nHost: %s:%s\r\n\r\n" % (filename, self._host, self._port))
-			data = sock.recv(1024)
-			while len(data):
-				response = response + data
-				data = sock.recv(1024)
-		except Exception as e:
-			print "Timeout", e
-			print 'response: ' + response
-			print "[" + response + "]"
-			print len(response)
-		sock.close()
+		conn = httplib.HTTPSConnection(self._host, self._port)
+		for i in range(0, 2):
+			conn.request('GET', '/index.html', headers={'Connection': 'Keep-Alive'})
+			theresponse = conn.getresponse()
+			if theresponse.status != 200:
+				print 'Got a non-200 response, failing.'
+				return False
+			response = response + theresponse.read()
+		conn.close()
 
 		if not response:
 			print 'response is None or empty, FAIL'
-			results[filename] = False
-
-		upper_response = string.upper(response)
-		if 2 != upper_response.count('HTTP/1.1 200 OK'):
-			print 'Did not find 2 successful responses.'
-			results[filename] = False
-		else:
-			results[filename] = True
-		return results
-
+			return False
+		return True
 
 class ExtraCreditTestRunner:
 	def __init__(self, host, port, sslPort):
@@ -210,18 +185,15 @@ if __name__  == '__main__':
 	port = arg_map['--port']
 	sslport = arg_map['--sslport']
 	
-	print 'HTTP tests!'
-	dump_results(NonPersistentTestRunner(host, port, 'http').run_all_tests())
-
 	print '\n\nHTTPS tests!'
 	dump_results(NonPersistentTestRunner(host, sslport, 'https').run_all_tests())
 
 	print '\n\nPersistent tests!'
-	try:
-		dump_results(PersistentTestRunner(host, port).test_200())
-	except Exception as e:
-		print e
-		print 'Persistent tests FAILED due to exception.'
+	if PersistentTestRunner(host, sslport).test():
+		print 'PASSED'
+	else:
+		print 'FAILED'
+
 	print '\n\nExtra credit tests!'
 	try:	
 		extra_credit = ExtraCreditTestRunner(host, port, sslport).testSimultaneousConnections()
