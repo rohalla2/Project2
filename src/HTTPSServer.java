@@ -10,9 +10,6 @@ import java.util.ArrayList;
  * Created by rohallaj on 2/20/15.
  */
 public class HTTPSServer extends AbstractServer {
-    private final int MAX_RETRY = 10;
-    private ServerSocket socket;
-    private Socket mClientSocket;
     private SSLServerSocketFactory mSSLServerSocketFactory;
 
     public HTTPSServer(int serverPort){
@@ -97,34 +94,6 @@ public class HTTPSServer extends AbstractServer {
             System.out.println("HTTPS Server bound and listening to port " + getServerPort());
         } catch (IOException e) {
             System.out.println("Problem Binding to client on SSL port " + getServerPort());
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean acceptFromClient() throws IOException {
-        try {
-           mClientSocket =  (socket.accept());
-            mClientSocket.setSoTimeout(10000);
-        } catch (SecurityException e) {
-            System.out.println("The security manager intervened; your config is very wrong. " + e);
-            return false;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Probably an invalid port number. " + e);
-            return false;
-        }
-
-        setToClientStream(new DataOutputStream(mClientSocket.getOutputStream()));
-        setFromClientStream(new BufferedReader(new InputStreamReader(mClientSocket.getInputStream())));
-        return true;
-    }
-
-    @Override
-    public void serverCleanup() {
-        super.serverCleanup();
-        try {
-            mClientSocket.close();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }

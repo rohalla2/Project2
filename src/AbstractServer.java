@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 abstract class AbstractServer extends Thread {
+    protected final int MAX_RETRY = 10;
+    protected ServerSocket socket;
+    protected Socket mClientSocket;
     private static final String[] URLS_404 = {"/redirect.defs"};
     private Boolean leaveConnectionOpen;
     public int getServerPort() {
@@ -40,7 +43,23 @@ abstract class AbstractServer extends Thread {
         this.serverPort = serverPort;
     }
     abstract void bind();
-    abstract boolean acceptFromClient() throws IOException;
+
+    public boolean acceptFromClient() throws IOException {
+        try {
+            mClientSocket =  (socket.accept());
+            mClientSocket.setSoTimeout(10000);
+        } catch (SecurityException e) {
+            System.out.println("The security manager intervened; your config is very wrong. " + e);
+            return false;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Probably an invalid port number. " + e);
+            return false;
+        }
+
+        setToClientStream(new DataOutputStream(mClientSocket.getOutputStream()));
+        setFromClientStream(new BufferedReader(new InputStreamReader(mClientSocket.getInputStream())));
+        return true;
+    }
 
     public ArrayList<String> getRequestHeader () throws IOException {
         ArrayList<String> strHeader = new ArrayList<String>();
@@ -223,6 +242,7 @@ abstract class AbstractServer extends Thread {
         try {
             fromClientStream.close();
             toClientStream.close();
+            mClientSocket.close();
         } catch (IOException e){
             System.out.println(e);
         }

@@ -14,12 +14,6 @@ import java.net.SocketException;
  * Created by rohallaj on 2/20/15.
  */
 public class Server extends AbstractServer {
-    private final int MAX_RETRY = 10;
-    private ServerSocket socket;
-    private Socket mClientSocket;
-    public ServerSocket getSocket() {
-        return socket;
-    }
 
     public static void main(String[] argv) {
         Map<String, String> flags = Utils.parseCmdlineFlags(argv);
@@ -48,18 +42,6 @@ public class Server extends AbstractServer {
         HTTPSServer sslServer = new HTTPSServer(sslServerPort);
         httpServer.start();
         sslServer.start();
-    }
-
-    public void setSocket(ServerSocket socket) {
-        this.socket = socket;
-    }
-
-    public Socket getClientSocket() {
-        return mClientSocket;
-    }
-
-    public void setClientSocket(Socket clientSocket) {
-        mClientSocket = clientSocket;
     }
 
     @Override
@@ -113,38 +95,10 @@ public class Server extends AbstractServer {
     @Override
     public void bind()  {
         try{
-            setSocket(new ServerSocket(getServerPort()));
+            socket = new ServerSocket(getServerPort());
             System.out.println("HTTP Server bound and listening to port " + getServerPort());
         } catch (IOException e) {
             System.out.println("Error binding to port " + getServerPort());
-        }
-    }
-
-    @Override
-    public boolean acceptFromClient() throws IOException {
-        try {
-            mClientSocket =  (socket.accept());
-            mClientSocket.setSoTimeout(10000);
-        } catch (SecurityException e) {
-            System.out.println("The security manager intervened; your config is very wrong. " + e);
-            return false;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Probably an invalid port number. " + e);
-            return false;
-        }
-
-        setToClientStream(new DataOutputStream(mClientSocket.getOutputStream()));
-        setFromClientStream(new BufferedReader(new InputStreamReader(mClientSocket.getInputStream())));
-        return true;
-    }
-
-    @Override
-    public void serverCleanup() {
-        super.serverCleanup();
-        try {
-            mClientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
