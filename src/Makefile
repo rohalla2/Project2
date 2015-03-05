@@ -5,8 +5,8 @@ default: all
 
 all: Server
 
-Server: Server.java Utils.java HTTPSServer.java
-	$(JAVAC) $(JFLAGS) Server.java Utils.java HTTPSServer.java
+Server: Server.java Utils.java
+	$(JAVAC) $(JFLAGS) Server.java Utils.java
 
 clean:
 	rm -f *.class
