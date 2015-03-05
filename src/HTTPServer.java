@@ -47,11 +47,10 @@ public class HTTPServer extends AbstractServer {
                     for (int i = 0; i <= MAX_RETRY; i++) {
                         ArrayList<String> requestHeader = getRequestHeader();
                         if (requestHeader == null || requestHeader.isEmpty()) {
-                            System.out.println("Ignoring empty request...");
                             setLeaveConnectionOpen(false);
                         } else {
                             String[] requests = requestHeader.get(0).split(" ");
-                            if (requestHeader.contains("Connection: close\r\n") || requestHeader.get(0).contains("HTTP/1.0")) {
+                            if (requestHeader.contains("Connection: close") || requestHeader.get(0).contains("HTTP/1.0")) {
                                 setLeaveConnectionOpen(false);
                             }
                             processRequest(requests[0], requests[1]);
