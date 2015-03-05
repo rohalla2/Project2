@@ -150,12 +150,6 @@ class PersistentTestRunner:
 		if 2 != upper_response.count('HTTP/1.1 200 OK'):
 			print 'Did not find 2 successful responses.'
 			results[filename] = False
-		elif 2 != upper_response.count('CONNECTION: KEEP-ALIVE'):
-			print 'Did not find 2 keep alives!'
-			results[filename] = False
-		elif 0 != upper_response.count('CONNECTION: CLOSE'):
-			print 'Server closed the connection, but requested keep-alive. FAIL'
-			results[filename] = False
 		else:
 			results[filename] = True
 		return results
