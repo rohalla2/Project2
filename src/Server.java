@@ -10,8 +10,8 @@ import java.util.*;
 
 public class Server extends Thread {
     private static final String[] URLS_404 = {"/redirect.defs"};
-    private final int MAX_RETRY = 10;
-    private final int SERVER_TIMEOUT_MILLISECONDS = 10000;
+    private static final int MAX_RETRY = 10;
+    private static final int SERVER_TIMEOUT_MILLISECONDS = 10000;
     private final int serverPort;
     private Boolean mIsSecureServer;
     private String mServerTypeName;
@@ -35,7 +35,6 @@ public class Server extends Thread {
         this.mIsSecureServer = isSecureServer;
         mServerTypeName = "SSL";
         initializeSSL();
-
     }
 
     public static void main(String[] argv) {
